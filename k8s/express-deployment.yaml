@@ -1,0 +1,85 @@
+apiVersion: apps/v1 # Kubernetes API version for apps (Deployments, StatefulSets, etc.)
+kind: Deployment # Resource type: manages stateless application replicas
+metadata:
+  name: express-app # Deployment name for identification
+  namespace: gke-learning # Namespace where deployment runs
+  labels: # Labels for resource organization
+    app: express-app # Label selector for service discovery
+spec:
+  replicas: 2 # Number of identical pods to run (high availability)
+  selector: # Pod selector for this deployment
+    matchLabels: # Labels that pods must have to be managed
+      app: express-app # Label key-value for pod selection
+  template: # Pod template specification
+    metadata: # Metadata for pods created by this deployment
+      labels: # Labels applied to each pod
+        app: express-app # Label for service discovery and management
+    spec: # Pod specification
+      containers: # List of containers in the pod
+        - name: express-app # Container name for identification
+          image: asasikumar/gke-express-hello-world:latest # Docker image to run
+          imagePullPolicy: Never # Never pull from registry (use local image)
+          ports: # Container ports to expose
+            - containerPort: 3000 # Port the Express.js app listens on
+          env: # Environment variables for the container
+            - name: NODE_ENV # Environment variable name
+              valueFrom: # Value source from ConfigMap
+                configMapKeyRef: # Reference to ConfigMap
+                  name: express-app-config # ConfigMap name
+                  key: NODE_ENV # Key in ConfigMap
+            - name: APP_NAME # Application name environment variable
+              valueFrom: # Value source from ConfigMap
+                configMapKeyRef: # Reference to ConfigMap
+                  name: express-app-config # ConfigMap name
+                  key: APP_NAME # Key in ConfigMap
+            # MongoDB connection environment variables
+            - name: MONGO_HOST # MongoDB host
+              valueFrom: # Value source from ConfigMap
+                configMapKeyRef: # Reference to ConfigMap
+                  name: express-app-config # ConfigMap name
+                  key: MONGO_HOST # Key in ConfigMap
+            - name: MONGO_PORT # MongoDB port
+              valueFrom: # Value source from ConfigMap
+                configMapKeyRef: # Reference to ConfigMap
+                  name: express-app-config # ConfigMap name
+                  key: MONGO_PORT # Key in ConfigMap
+            - name: MONGO_DATABASE # MongoDB database name
+              valueFrom: # Value source from ConfigMap
+                configMapKeyRef: # Reference to ConfigMap
+                  name: express-app-config # ConfigMap name
+                  key: MONGO_DATABASE # Key in ConfigMap
+            - name: MONGO_AUTH_SOURCE # MongoDB auth source
+              valueFrom: # Value source from ConfigMap
+                configMapKeyRef: # Reference to ConfigMap
+                  name: express-app-config # ConfigMap name
+                  key: MONGO_AUTH_SOURCE # Key in ConfigMap
+            # MongoDB credentials from Secret
+            - name: MONGO_USERNAME # MongoDB username
+              valueFrom: # Value source from Secret
+                secretKeyRef: # Reference to Secret
+                  name: mongo-secret # Secret name
+                  key: mongo-root-username # Key in Secret
+            - name: MONGO_PASSWORD # MongoDB password
+              valueFrom: # Value source from Secret
+                secretKeyRef: # Reference to Secret
+                  name: mongo-secret # Secret name
+                  key: mongo-root-password # Key in Secret
+          resources: # Resource limits and requests
+            requests: # Minimum resources required
+              memory: "64Mi" # Minimum memory allocation
+              cpu: "50m" # Minimum CPU allocation (50 millicores)
+            limits: # Maximum resources allowed
+              memory: "128Mi" # Maximum memory allocation
+              cpu: "100m" # Maximum CPU allocation (100 millicores)
+          livenessProbe: # Health check to determine if pod is alive
+            httpGet: # HTTP GET probe
+              path: /health # Health check endpoint path
+              port: 3000 # Port to check
+            initialDelaySeconds: 30 # Wait 30s before first check
+            periodSeconds: 10 # Check every 10 seconds
+          readinessProbe: # Health check to determine if pod is ready for traffic
+            httpGet: # HTTP GET probe
+              path: /ready # Readiness check endpoint path
+              port: 3000 # Port to check
+            initialDelaySeconds: 5 # Wait 5s before first check
+            periodSeconds: 5 # Check every 5 seconds

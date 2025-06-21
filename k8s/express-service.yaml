@@ -1,0 +1,18 @@
+apiVersion: v1 # Kubernetes API version for core resources
+kind: Service # Resource type: provides network access to pods
+metadata:
+  name: express-app-service # Service name for identification
+  namespace: gke-learning # Namespace where service runs
+  labels: # Labels for resource organization
+    app: express-app # Label for service identification
+spec:
+  type:
+    ClusterIP # Service type: internal cluster access only (no external IP)
+    # Other types: NodePort (opens port on nodes), LoadBalancer (provisions cloud LB), ExternalName (DNS CNAME)
+  ports: # Port configuration
+    - port: 80 # Service port (what other services connect to)
+      targetPort: 3000 # Container port (where app listens)
+      protocol: TCP # Network protocol
+      name: http # Port name for identification
+  selector: # Pod selector for traffic routing
+    app: express-app # Label selector to find pods to route traffic to

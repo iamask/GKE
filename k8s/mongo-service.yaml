@@ -1,0 +1,17 @@
+apiVersion: v1 # Kubernetes API version for core resources
+kind: Service # Resource type: provides network access to pods
+metadata:
+  name: mongo-service # Service name for identification
+  namespace: gke-learning # Namespace where service runs
+  labels: # Labels for resource organization
+    app: mongo # Label for service identification
+spec:
+  type: ClusterIP # Service type: internal cluster access only
+  clusterIP: None # Headless service (no cluster IP)
+  ports: # Port configuration
+    - port: 27017 # Service port
+      targetPort: 27017 # Container port
+      protocol: TCP # Network protocol
+      name: mongodb # Port name for identification
+  selector: # Pod selector for traffic routing
+    app: mongo # Label selector to find pods to route traffic to

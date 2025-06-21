@@ -1,0 +1,67 @@
+apiVersion: apps/v1 # Kubernetes API version for apps (Deployments, StatefulSets, etc.)
+kind: StatefulSet # Resource type: manages stateful application replicas with stable identities
+metadata:
+  name: mongo # StatefulSet name for identification
+  namespace: gke-learning # Namespace where StatefulSet runs
+  labels: # Labels for resource organization
+    app: mongo # Label selector for service discovery
+spec:
+  serviceName: mongo-service # Headless service name for stable network identities
+  replicas: 1 # Number of MongoDB replicas (1 for single instance)
+  selector: # Pod selector for this StatefulSet
+    matchLabels: # Labels that pods must have to be managed
+      app: mongo # Label key-value for pod selection
+  template: # Pod template specification
+    metadata: # Metadata for pods created by this StatefulSet
+      labels: # Labels applied to each pod
+        app: mongo # Label for service discovery and management
+    spec: # Pod specification
+      containers: # List of containers in the pod
+        - name: mongo # Container name for identification
+          image: mongo:6.0 # Official MongoDB 6.0 image
+          ports: # Container ports to expose
+            - containerPort: 27017 # MongoDB default port
+          env: # Environment variables for the container
+            - name: MONGO_INITDB_ROOT_USERNAME # MongoDB root username
+              valueFrom: # Value source from Secret
+                secretKeyRef: # Reference to Secret
+                  name: mongo-secret # Secret name
+                  key: mongo-root-username # Key in Secret
+            - name: MONGO_INITDB_ROOT_PASSWORD # MongoDB root password
+              valueFrom: # Value source from Secret
+                secretKeyRef: # Reference to Secret
+                  name: mongo-secret # Secret name
+                  key: mongo-root-password # Key in Secret
+            - name: MONGO_INITDB_DATABASE # Initial database name
+              valueFrom: # Value source from Secret
+                secretKeyRef: # Reference to Secret
+                  name: mongo-secret # Secret name
+                  key: mongo-database # Key in Secret
+          resources: # Resource limits and requests
+            requests: # Minimum resources required
+              memory: "256Mi" # Minimum memory allocation
+              cpu: "250m" # Minimum CPU allocation (250 millicores)
+            limits: # Maximum resources allowed
+              memory: "512Mi" # Maximum memory allocation
+              cpu: "500m" # Maximum CPU allocation (500 millicores)
+          volumeMounts: # Volume mounts for persistent storage
+            - name: mongo-data # Volume name
+              mountPath: /data/db # MongoDB data directory
+          livenessProbe: # Health check to determine if pod is alive
+            tcpSocket: # TCP socket probe
+              port: 27017 # Port to check
+            initialDelaySeconds: 30 # Wait 30s before first check
+            periodSeconds: 10 # Check every 10 seconds
+          readinessProbe: # Health check to determine if pod is ready for traffic
+            tcpSocket: # TCP socket probe
+              port: 27017 # Port to check
+            initialDelaySeconds: 5 # Wait 5s before first check
+            periodSeconds: 5 # Check every 5 seconds
+  volumeClaimTemplates: # Persistent volume claim templates
+    - metadata: # PVC metadata
+        name: mongo-data # PVC name
+      spec: # PVC specification
+        accessModes: ["ReadWriteOnce"] # Access mode for single node
+        resources: # Resource requirements
+          requests: # Storage request
+            storage: 1Gi # Request 1GB of storage

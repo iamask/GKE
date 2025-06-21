@@ -1,0 +1,29 @@
+apiVersion: v1 # Kubernetes API version for core resources
+kind: Namespace # Resource type: creates a logical cluster partition
+metadata:
+  name: gke-learning # Namespace name for organizing resources
+  labels: # Labels for resource identification and filtering
+    name: gke-learning # Label key-value pair for namespace name
+    purpose: learning-kubernetes # Label indicating the purpose of this namespace
+    # When adding a new MongoDB service:
+    # 1. Add label 'mongodb-database: true' to enable MongoDB operator permissions
+    #    Example:
+    #    mongodb-database: true
+    # 2. Add any MongoDB-specific network policies if required
+    #    Example:
+    #    kind: NetworkPolicy
+    #    spec:
+    #      ingress:
+    #        - from:
+    #          - namespaceSelector:
+    #              matchLabels:
+    #                name: gke-learning
+    #          ports:
+    #          - port: 27017
+    # 3. Consider adding resource quotas for MongoDB workloads
+    #    Example:
+    #    kind: ResourceQuota
+    #    spec:
+    #      hard:
+    #        requests.storage: "10Gi"
+    #        pods: "3"
