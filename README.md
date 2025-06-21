@@ -291,6 +291,27 @@ kubectl logs -f <pod-name> -n gke-learning
 kubectl logs -f -n ingress-nginx deployment/ingress-nginx-controller
 ```
 
+### Access Kubernetes Dashboard
+
+```bash
+# Enable dashboard addon (if not already enabled)
+minikube addons enable dashboard
+
+# Open dashboard in browser
+minikube dashboard
+
+# Get dashboard URL only (without opening browser)
+minikube dashboard --url
+```
+
+**Dashboard Features:**
+
+- ✅ **Web UI**: Visual management of your cluster
+- ✅ **Resource Monitoring**: View pods, services, deployments
+- ✅ **Logs**: Access pod logs through the interface
+- ✅ **Resource Management**: Create, edit, delete resources
+- ✅ **Namespace Switching**: Manage different namespaces
+
 ### Debug Common Issues
 
 ```bash
@@ -544,6 +565,10 @@ kubectl rollout restart deployment express-app -n gke-learning
 kubectl get all -n gke-learning
 kubectl logs -f deployment/express-app -n gke-learning
 kubectl describe ingress express-app-ingress -n gke-learning
+
+# Dashboard
+minikube addons enable dashboard
+minikube dashboard
 
 # Access
 kubectl port-forward -n gke-learning service/express-app-service 8080:80
