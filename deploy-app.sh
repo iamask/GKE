@@ -42,6 +42,8 @@ echo "📋 Applying Kubernetes manifests..."
 # This ensures everything is deployed before we build and restart the app
 kubectl apply -f k8s/
 
+# Retry applying manifests if there were timing issues
+
 echo "🐳 Building Docker image: $IMAGE"
 # Build the production-ready Docker image with the latest code changes
 docker build -t $IMAGE .
