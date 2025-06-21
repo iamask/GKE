@@ -2,7 +2,7 @@ apiVersion: v1 # Kubernetes API version for core resources
 kind: ConfigMap # Resource type: stores configuration data as key-value pairs
 metadata:
   name: mongo-config # ConfigMap name for referencing in deployments
-  namespace: gke-learning # Namespace where this ConfigMap lives
+  namespace: express-mongo-app # Namespace where this ConfigMap lives
 data: # Configuration data section
   MONGO_PORT: "27017" # MongoDB default port
   MONGO_HOST: "mongo-service" # MongoDB service name for internal communication

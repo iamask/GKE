@@ -2,7 +2,7 @@ apiVersion: apps/v1 # Kubernetes API version for apps (Deployments, StatefulSets
 kind: Deployment # Resource type: manages stateless application replicas
 metadata:
   name: express-app # Deployment name for identification
-  namespace: gke-learning # Namespace where deployment runs
+  namespace: express-mongo-app # Namespace where deployment runs
   labels: # Labels for resource organization
     app: express-app # Label selector for service discovery
 spec:
@@ -17,7 +17,7 @@ spec:
     spec: # Pod specification
       containers: # List of containers in the pod
         - name: express-app # Container name for identification
-          image: asasikumar/gke-express-hello-world:latest # Docker image to run
+          image: asasikumar/express-mongo-minikube:latest # Docker image to run
           imagePullPolicy: Never # Never pull from registry (use local image)
           ports: # Container ports to expose
             - containerPort: 3000 # Port the Express.js app listens on

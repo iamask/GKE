@@ -2,7 +2,7 @@ apiVersion: v1 # Kubernetes API version for core resources
 kind: Service # Resource type: provides network access to pods
 metadata:
   name: mongo-service # Service name for identification
-  namespace: gke-learning # Namespace where service runs
+  namespace: express-mongo-app # Namespace where service runs
   labels: # Labels for resource organization
     app: mongo # Label for service identification
 spec:

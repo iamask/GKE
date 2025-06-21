@@ -2,7 +2,7 @@ apiVersion: networking.k8s.io/v1 # Kubernetes API version for networking resourc
 kind: Ingress # Resource type: manages external access to services
 metadata:
   name: express-app-ingress # Ingress name for identification
-  namespace: gke-learning # Namespace where ingress runs
+  namespace: express-mongo-app # Namespace where ingress runs
   annotations: # Ingress controller specific configurations
     nginx.ingress.kubernetes.io/rewrite-target: / # Rewrite URL paths to root
     nginx.ingress.kubernetes.io/ssl-redirect: "false" # Disable SSL redirect

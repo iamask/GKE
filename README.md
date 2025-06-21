@@ -19,7 +19,7 @@ Internet → NGINX Ingress → Express.js Service → Express.js Pods
 - **Service (ClusterIP):** Internal routing to pods
 - **Pods:** Run Express.js app (2+ replicas)
 - **MongoDB:** StatefulSet with persistent storage, accessed via headless service
-- **Namespace:** All resources isolated in `gke-learning`
+- **Namespace:** All resources isolated in `express-mongo-app`
 
 ---
 
@@ -36,7 +36,7 @@ Internet → NGINX Ingress → Express.js Service → Express.js Pods
 ├── 📄 .gitignore                      # Git ignore patterns
 │
 └── 📁 k8s/                            # Kubernetes manifests
-    ├──  gke-namespace.yaml          # Namespace definition (gke-learning)
+    ├──  minikube-namespace.yaml     # Namespace definition (express-mongo-app)
     │
     ├──  express-deployment.yaml     # Express.js app deployment (replicas, health checks)
     ├── 📄 express-service.yaml        # ClusterIP service for Express.js
@@ -76,7 +76,7 @@ Internet → NGINX Ingress → Express.js Service → Express.js Pods
 
 **Shared Resources:**
 
-- **`gke-namespace.yaml`** - Namespace definition for resource isolation and organization
+- **`minikube-namespace.yaml`** - Namespace definition for resource isolation and organization
 
 ### Scalable Naming Convention
 
@@ -122,7 +122,7 @@ eval $(minikube docker-env)
 ### 3. Build the Docker Image
 
 ```bash
-docker build -t asasikumar/gke-express-hello-world:latest .
+docker build -t asasikumar/express-mongo-minikube:latest .
 ```
 
 ### 4. Deploy All Resources
@@ -134,21 +134,21 @@ kubectl apply -f k8s/
 ### 5. Wait for Everything to Be Ready
 
 ```bash
-kubectl wait --for=condition=ready pod -l app=mongo -n gke-learning --timeout=300s
-kubectl wait --for=condition=ready pod -l app=express-app -n gke-learning --timeout=300s
+kubectl wait --for=condition=ready pod -l app=mongo -n express-mongo-app --timeout=300s
+kubectl wait --for=condition=ready pod -l app=express-app -n express-mongo-app --timeout=300s
 kubectl wait --for=condition=ready pod -l k8s-app=metrics-server -n kube-system --timeout=120s
 ```
 
 ### 6. (Optional) Add Demo Data to MongoDB
 
 ```bash
-kubectl exec -n gke-learning mongo-0 -- mongosh --username root --password password --authenticationDatabase admin --eval "use express_app; db.messages.insertOne({message: 'Hello World from Express.js and Mongo', timestamp: new Date(), source: 'manual_entry'})"
+kubectl exec -n express-mongo-app mongo-0 -- mongosh --username root --password password --authenticationDatabase admin --eval "use express_app; db.messages.insertOne({message: 'Hello World from Express.js and Mongo', timestamp: new Date(), source: 'manual_entry'})"
 ```
 
 ### 7. Port-Forward and Test
 
 ```bash
-kubectl port-forward -n gke-learning service/express-app-service 8080:80 &
+kubectl port-forward -n express-mongo-app service/express-app-service 8080:80 &
 curl http://localhost:8080/mongo-validate
 ```
 
@@ -156,7 +156,7 @@ curl http://localhost:8080/mongo-validate
 
 ```bash
 # View pod resource usage
-kubectl top pods -n gke-learning
+kubectl top pods -n express-mongo-app
 
 # View node resource usage
 kubectl top nodes
@@ -186,6 +186,23 @@ This script automatically:
 
 ---
 
+## 📝 When to Run `kubectl apply -f k8s/`
+
+You should run `kubectl apply -f k8s/` in these situations:
+
+- **First-time setup:** When you deploy to a fresh Minikube cluster or after deleting the namespace.
+- **After editing YAML files:** If you make changes to any manifest in the `k8s/` directory (e.g., deployments, services, configmaps, secrets).
+- **If resources are missing:** If the namespace or any resource does not exist, the deployment script will fail unless you apply the manifests first.
+
+**You do NOT need to run it every time you redeploy the app image** (for example, if you are just updating code and using `./deploy-app.sh`).
+
+**Best practice:**
+
+- Run `kubectl apply -f k8s/` after any changes to your Kubernetes YAML files, or when setting up a new cluster.
+- Use `./deploy-app.sh` for fast, repeatable app updates and restarts.
+
+---
+
 ## 🗄️ MongoDB Configuration & Admin Access
 
 ### Secrets
@@ -207,9 +224,9 @@ data:
 ### Admin Access
 
 - **CLI:**  
-  `kubectl exec -it mongo-0 -n gke-learning -- mongosh --username root --password password --authenticationDatabase admin`
+  `kubectl exec -it mongo-0 -n express-mongo-app -- mongosh --username root --password password --authenticationDatabase admin`
 - **Port Forward:**  
-  `kubectl port-forward -n gke-learning service/mongo-service 27017:27017 &`  
+  `kubectl port-forward -n express-mongo-app service/mongo-service 27017:27017 &`  
   Then connect with Compass or mongosh.
 
 ---
@@ -219,14 +236,14 @@ data:
 1. **Point Docker to Minikube:**  
    `eval $(minikube docker-env)`
 2. **Rebuild the image:**  
-   `docker build -t asasikumar/gke-express-hello-world:latest .`
+   `docker build -t asasikumar/express-mongo-minikube:latest .`
 3. **Set `imagePullPolicy: Never` in deployment**
 4. **Restart deployment:**  
-   `kubectl rollout restart deployment/express-app -n gke-learning`
+   `kubectl rollout restart deployment/express-app -n express-mongo-app`
 5. **Wait for pods:**  
-   `kubectl wait --for=condition=ready pod -l app=express-app -n gke-learning --timeout=300s`
+   `kubectl wait --for=condition=ready pod -l app=express-app -n express-mongo-app --timeout=300s`
 6. **(Optional) Add MongoDB data:**  
-   `kubectl exec -n gke-learning mongo-0 -- mongosh --username root --password password --authenticationDatabase admin --eval "use express_app; db.messages.insertOne({message: 'Hello World from Express.js and Mongo', timestamp: new Date(), source: 'manual_entry'})"`
+   `kubectl exec -n express-mongo-app mongo-0 -- mongosh --username root --password password --authenticationDatabase admin --eval "use express_app; db.messages.insertOne({message: 'Hello World from Express.js and Mongo', timestamp: new Date(), source: 'manual_entry'})"`
 
 ---
 
@@ -234,14 +251,14 @@ data:
 
 ```bash
 # Get all resources
-kubectl get all -n gke-learning
+kubectl get all -n express-mongo-app
 
 # View logs
-kubectl logs -f deployment/express-app -n gke-learning
-kubectl logs -f statefulset/mongo -n gke-learning
+kubectl logs -f deployment/express-app -n express-mongo-app
+kubectl logs -f statefulset/mongo -n express-mongo-app
 
 # Port forward
-kubectl port-forward -n gke-learning service/express-app-service 8080:80
+kubectl port-forward -n express-mongo-app service/express-app-service 8080:80
 
 # Test endpoints
 curl http://localhost:8080/
@@ -249,10 +266,10 @@ curl http://localhost:8080/mongo
 curl http://localhost:8080/mongo-validate
 
 # 📊 Monitoring & Metrics
-kubectl top pods -n gke-learning          # View pod CPU/memory usage
+kubectl top pods -n express-mongo-app          # View pod CPU/memory usage
 kubectl top nodes                         # View node resource usage
-kubectl get events -n gke-learning        # View recent events
-kubectl describe pod <pod-name> -n gke-learning  # Detailed pod info
+kubectl get events -n express-mongo-app        # View recent events
+kubectl describe pod <pod-name> -n express-mongo-app  # Detailed pod info
 
 # 🔧 Metrics Server Management
 kubectl get pods -n kube-system | grep metrics-server  # Check metrics server status
@@ -292,7 +309,7 @@ minikube dashboard --url &
 
 ### Metrics Dashboard Navigation:
 
-1. **Navigate to namespace**: `gke-learning`
+1. **Navigate to namespace**: `express-mongo-app`
 2. **View Deployments**: Click on `express-app` deployment
 3. **Check Metrics Tab**: See CPU/memory usage charts
 4. **Monitor Individual Pods**: Click on specific pods for detailed metrics

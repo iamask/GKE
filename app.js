@@ -52,7 +52,7 @@ app.use(express.json());
 // Basic route
 app.get('/', (req, res) => {
   res.json({
-    message: 'Hello World from Express.js on GKE!',
+    message: 'Hello World from Express.js on Minikube!',
     timestamp: new Date().toISOString(),
     pod: process.env.HOSTNAME || 'unknown',
     environment: process.env.NODE_ENV || 'development',

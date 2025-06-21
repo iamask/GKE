@@ -1,10 +1,11 @@
 apiVersion: v1 # Kubernetes API version for core resources
 kind: Namespace # Resource type: creates a logical cluster partition
 metadata:
-  name: gke-learning # Namespace name for organizing resources
+  name: express-mongo-app # Namespace name for organizing resources
   labels: # Labels for resource identification and filtering
-    name: gke-learning # Label key-value pair for namespace name
-    purpose: learning-kubernetes # Label indicating the purpose of this namespace
+    name: express-mongo-app # Label key-value pair for namespace name
+    purpose: local-development # Label indicating the purpose of this namespace
+    environment: minikube # Label indicating the environment
     # When adding a new MongoDB service:
     # 1. Add label 'mongodb-database: true' to enable MongoDB operator permissions
     #    Example:
@@ -17,7 +18,7 @@ metadata:
     #        - from:
     #          - namespaceSelector:
     #              matchLabels:
-    #                name: gke-learning
+    #                name: express-mongo-app
     #          ports:
     #          - port: 27017
     # 3. Consider adding resource quotas for MongoDB workloads

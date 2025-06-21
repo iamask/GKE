@@ -13,8 +13,8 @@
 set -e  # Exit immediately if any command fails
 
 # Configuration variables - easily modifiable for different environments
-NAMESPACE="gke-learning"
-IMAGE="asasikumar/gke-express-hello-world:latest"
+NAMESPACE="express-mongo-app"
+IMAGE="asasikumar/express-mongo-minikube:latest"
 
 echo "🔧 Ensuring Minikube is running with required addons..."
 # Check if Minikube is running

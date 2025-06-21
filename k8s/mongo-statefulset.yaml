@@ -2,7 +2,7 @@ apiVersion: apps/v1 # Kubernetes API version for apps (Deployments, StatefulSets
 kind: StatefulSet # Resource type: manages stateful application replicas with stable identities
 metadata:
   name: mongo # StatefulSet name for identification
-  namespace: gke-learning # Namespace where StatefulSet runs
+  namespace: express-mongo-app # Namespace where StatefulSet runs
   labels: # Labels for resource organization
     app: mongo # Label selector for service discovery
 spec:
