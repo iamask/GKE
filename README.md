@@ -213,6 +213,34 @@ curl http://localhost:8080/mongo-validate
 
 ---
 
+## 📊 Minikube Dashboard
+
+Access the Kubernetes Dashboard to monitor your application through a web-based UI:
+
+```bash
+minikube dashboard --url &
+```
+
+### What You Can Do in the Dashboard:
+
+- **View Pod Status**: See real-time status of Express.js and MongoDB pods
+- **Monitor Resources**: Check CPU, memory usage, and resource limits
+- **View Logs**: Access application logs directly from the UI
+- **Manage Deployments**: Scale, restart, or update deployments
+- **Service Discovery**: View services, endpoints, and networking
+- **Namespace Management**: Navigate between different namespaces
+- **Event Monitoring**: Track Kubernetes events and issues
+
+### Dashboard Features:
+
+- **Real-time Updates**: Live status updates without manual refresh
+- **Resource Metrics**: Visual representation of resource consumption
+- **Log Streaming**: Real-time log viewing for troubleshooting
+- **YAML Editor**: Direct manifest editing capabilities
+- **Multi-namespace Support**: Switch between namespaces easily
+
+---
+
 ## 📚 Endpoints
 
 | Endpoint          | Method | Description                           |
