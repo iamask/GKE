@@ -105,11 +105,13 @@ The manifest files follow a clear naming pattern for easy extension:
 - kubectl
 - Docker Hub account (for cloud, not needed for local Minikube)
 
-### 1. Start Minikube
+### 1. Start Minikube with Required Addons
 
 ```bash
-minikube start --addons=ingress
+minikube start --addons=ingress,metrics-server
 ```
+
+**Why metrics-server?** Enables CPU and memory monitoring in the Kubernetes Dashboard and via `kubectl top` commands.
 
 ### 2. Point Docker to Minikube
 
@@ -134,6 +136,7 @@ kubectl apply -f k8s/
 ```bash
 kubectl wait --for=condition=ready pod -l app=mongo -n gke-learning --timeout=300s
 kubectl wait --for=condition=ready pod -l app=express-app -n gke-learning --timeout=300s
+kubectl wait --for=condition=ready pod -l k8s-app=metrics-server -n kube-system --timeout=120s
 ```
 
 ### 6. (Optional) Add Demo Data to MongoDB
@@ -148,6 +151,38 @@ kubectl exec -n gke-learning mongo-0 -- mongosh --username root --password passw
 kubectl port-forward -n gke-learning service/express-app-service 8080:80 &
 curl http://localhost:8080/mongo-validate
 ```
+
+### 8. View Resource Metrics
+
+```bash
+# View pod resource usage
+kubectl top pods -n gke-learning
+
+# View node resource usage
+kubectl top nodes
+
+# Access the dashboard for visual monitoring
+minikube dashboard --url &
+```
+
+---
+
+## 🚀 Automated Deployment (Recommended)
+
+For the easiest deployment experience, use the automated script:
+
+```bash
+./deploy-app.sh
+```
+
+This script automatically:
+
+- ✅ Ensures Minikube is running with required addons (ingress + metrics-server)
+- ✅ Builds and deploys your application
+- ✅ Waits for all components to be ready
+- ✅ Generates initial load to create metrics
+- ✅ Shows current resource usage
+- ✅ Offers interactive port-forwarding
 
 ---
 
@@ -212,11 +247,22 @@ kubectl port-forward -n gke-learning service/express-app-service 8080:80
 curl http://localhost:8080/
 curl http://localhost:8080/mongo
 curl http://localhost:8080/mongo-validate
+
+# 📊 Monitoring & Metrics
+kubectl top pods -n gke-learning          # View pod CPU/memory usage
+kubectl top nodes                         # View node resource usage
+kubectl get events -n gke-learning        # View recent events
+kubectl describe pod <pod-name> -n gke-learning  # Detailed pod info
+
+# 🔧 Metrics Server Management
+kubectl get pods -n kube-system | grep metrics-server  # Check metrics server status
+minikube addons enable metrics-server     # Enable metrics server
+kubectl logs -n kube-system deployment/metrics-server  # View metrics server logs
 ```
 
 ---
 
-## 📊 Minikube Dashboard
+## �� Minikube Dashboard & Monitoring
 
 Access the Kubernetes Dashboard to monitor your application through a web-based UI:
 
@@ -226,21 +272,49 @@ minikube dashboard --url &
 
 ### What You Can Do in the Dashboard:
 
-- **View Pod Status**: See real-time status of Express.js and MongoDB pods
-- **Monitor Resources**: Check CPU, memory usage, and resource limits
-- **View Logs**: Access application logs directly from the UI
-- **Manage Deployments**: Scale, restart, or update deployments
-- **Service Discovery**: View services, endpoints, and networking
-- **Namespace Management**: Navigate between different namespaces
-- **Event Monitoring**: Track Kubernetes events and issues
+- **📈 View Resource Metrics**: Real-time CPU and memory usage for all pods
+- **📊 Monitor Performance**: Track resource consumption trends over time
+- **🔍 View Pod Status**: See real-time status of Express.js and MongoDB pods
+- **📋 View Logs**: Access application logs directly from the UI
+- **⚙️ Manage Deployments**: Scale, restart, or update deployments
+- **🌐 Service Discovery**: View services, endpoints, and networking
+- **📁 Namespace Management**: Navigate between different namespaces
+- **📢 Event Monitoring**: Track Kubernetes events and issues
 
 ### Dashboard Features:
 
-- **Real-time Updates**: Live status updates without manual refresh
-- **Resource Metrics**: Visual representation of resource consumption
-- **Log Streaming**: Real-time log viewing for troubleshooting
-- **YAML Editor**: Direct manifest editing capabilities
-- **Multi-namespace Support**: Switch between namespaces easily
+- **📈 Real-time Metrics**: Live CPU and memory updates every 60 seconds
+- **📊 Resource Visualization**: Charts and graphs for resource consumption
+- **📝 Log Streaming**: Real-time log viewing for troubleshooting
+- **✏️ YAML Editor**: Direct manifest editing capabilities
+- **🌍 Multi-namespace Support**: Switch between namespaces easily
+- **📱 Responsive Design**: Works on desktop and mobile devices
+
+### Metrics Dashboard Navigation:
+
+1. **Navigate to namespace**: `gke-learning`
+2. **View Deployments**: Click on `express-app` deployment
+3. **Check Metrics Tab**: See CPU/memory usage charts
+4. **Monitor Individual Pods**: Click on specific pods for detailed metrics
+5. **View Node Metrics**: Go to Nodes section for cluster-wide metrics
+
+### Troubleshooting Metrics:
+
+If metrics aren't showing in the dashboard:
+
+```bash
+# Check if metrics server is running
+kubectl get pods -n kube-system | grep metrics-server
+
+# Enable metrics server if disabled
+minikube addons enable metrics-server
+
+# Wait for metrics to be available
+kubectl wait --for=condition=ready pod -l k8s-app=metrics-server -n kube-system --timeout=120s
+
+# Generate some load to create metrics
+for i in {1..5}; do curl -s http://localhost:8080/ > /dev/null; done
+```
 
 ---
 
@@ -263,6 +337,10 @@ minikube dashboard --url &
 - Use `imagePullPolicy: Never` for local images.
 - Namespace isolation keeps resources organized.
 - MongoDB uses StatefulSet for persistent storage.
+- **📊 Metrics server** provides real-time CPU and memory monitoring.
+- **📈 Dashboard metrics** update every 60 seconds by default.
+- **🔧 Use `./deploy-app.sh`** for automated deployment with metrics setup.
+- **📋 Monitor resource usage** to prevent pod evictions and OOM issues.
 
 ---
 
@@ -277,7 +355,7 @@ minikube dashboard --url &
 
 ## 🏗️ Architecture Diagrams & Future Improvements
 
-### **Current Architecture (Single MongoDB)**
+### **Current Architecture (Single MongoDB + Metrics)**
 
 ```text
 ┌─────────────────────────────────────────────────────────────────────────────┐
@@ -321,6 +399,22 @@ minikube dashboard --url &
 │                │   Persistent Storage    │                                  │
 │                └─────────────────────────┘                                  │
 └─────────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                    MONITORING & METRICS                                     │
+│                                                                             │
+│  ┌─────────────────────────────────────────────────────────────────────┐   │
+│  │                KUBERNETES DASHBOARD                                  │   │
+│  │              (Web-based UI)                                         │   │
+│  └─────────────────────────────────────────────────────────────────────┘   │
+│                              ▲                                              │
+│                              │                                              │
+│  ┌─────────────────────────────────────────────────────────────────────┐   │
+│  │                  METRICS SERVER                                      │   │
+│  │              (CPU/Memory Metrics)                                    │   │
+│  │              Updates every 60s                                       │   │
+│  └─────────────────────────────────────────────────────────────────────┘   │
+└─────────────────────────────────────────────────────────────────────────────┘
 ```
 
 **Current Benefits:**
@@ -329,6 +423,9 @@ minikube dashboard --url &
 - ✅ **Persistent storage** via StatefulSet
 - ✅ **Load balancing** for Express.js pods
 - ✅ **Health checks** and monitoring
+- ✅ **📊 Real-time metrics** via metrics server
+- ✅ **📈 Dashboard monitoring** with CPU/memory visualization
+- ✅ **🔧 Automated deployment** with metrics setup
 
 **Current Limitations:**
 

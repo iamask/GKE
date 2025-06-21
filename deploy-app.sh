@@ -8,12 +8,29 @@
 # - Ensures consistent deployment process across different environments
 # - Provides interactive options for port-forwarding
 # - Saves time by automating repetitive tasks
+# - Ensures metrics server is always enabled for monitoring
 
 set -e  # Exit immediately if any command fails
 
 # Configuration variables - easily modifiable for different environments
 NAMESPACE="gke-learning"
 IMAGE="asasikumar/gke-express-hello-world:latest"
+
+echo "🔧 Ensuring Minikube is running with required addons..."
+# Check if Minikube is running
+if ! minikube status | grep -q "Running"; then
+    echo "🚀 Starting Minikube with required addons..."
+    minikube start --addons=ingress,metrics-server
+else
+    echo "✅ Minikube is already running"
+    # Ensure metrics-server is enabled
+    if ! minikube addons list | grep -q "metrics-server.*enabled"; then
+        echo "📊 Enabling metrics-server addon..."
+        minikube addons enable metrics-server
+    else
+        echo "✅ Metrics server is already enabled"
+    fi
+fi
 
 echo "👉 Switching Docker to Minikube's Docker daemon..."
 # This is crucial for Minikube - it ensures the Docker image is built inside Minikube's Docker daemon
@@ -23,6 +40,10 @@ eval $(minikube docker-env)
 echo "🐳 Building Docker image: $IMAGE"
 # Build the production-ready Docker image with the latest code changes
 docker build -t $IMAGE .
+
+echo "📊 Ensuring metrics server is ready..."
+# Wait for metrics server to be ready before proceeding
+kubectl wait --for=condition=ready pod -l k8s-app=metrics-server -n kube-system --timeout=120s
 
 echo "🔄 Restarting Express.js deployment in namespace $NAMESPACE"
 # Force a rolling restart to pick up the new Docker image
@@ -34,7 +55,18 @@ echo "⏳ Waiting for pods to be ready..."
 # This prevents issues where the app might not be fully functional yet
 kubectl wait --for=condition=ready pod -l app=express-app -n $NAMESPACE --timeout=300s
 
+echo "📈 Generating some load to create initial metrics..."
+# Generate some load to ensure metrics are available
+for i in {1..5}; do
+    curl -s http://localhost:8080/ > /dev/null 2>&1 || true
+    sleep 1
+done
+
 echo "✅ Deployment complete!"
+
+# Show current metrics
+echo "📊 Current resource usage:"
+kubectl top pods -n $NAMESPACE 2>/dev/null || echo "Metrics will be available in a few minutes..."
 
 # Interactive port-forwarding option
 # This makes it easy to immediately test the application after deployment
