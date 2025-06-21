@@ -226,6 +226,11 @@ data:
 - **Port Forward:**  
   `kubectl port-forward -n express-mongo-app service/mongo-service 27017:27017 &`  
   Then connect with Compass or mongosh.
+- **MongoDB Compass (GUI):**
+  1. Run: `kubectl port-forward -n express-mongo-app service/mongo-service 27017:27017`
+  2. Open MongoDB Compass
+  3. Use connection string: `mongodb://root:password@localhost:27017/express_app?authSource=admin`
+  4. Or connect to `mongodb://localhost:27017` and authenticate in Compass UI
 
 ---
 

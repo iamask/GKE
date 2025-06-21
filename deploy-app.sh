@@ -81,10 +81,29 @@ kubectl top pods -n $NAMESPACE 2>/dev/null || echo "Metrics will be available in
 # This makes it easy to immediately test the application after deployment
 read -p 'Do you want to port-forward to localhost:8080? (y/n): ' answer
 if [[ $answer == [Yy]* ]]; then
-  echo "🌐 Port-forwarding service/express-app-service 8080:80"
+  echo "🌐 Port-forwarding service/express-app-service 8080:80 (running in background)"
   # Forward the Kubernetes service to localhost for easy testing
-  kubectl port-forward -n $NAMESPACE service/express-app-service 8080:80
+  kubectl port-forward -n $NAMESPACE service/express-app-service 8080:80 &
+  echo "✅ Express.js app accessible at: http://localhost:8080"
 else
   echo "You can port-forward later with:"
   echo "kubectl port-forward -n $NAMESPACE service/express-app-service 8080:80"
+fi
+
+# MongoDB port-forwarding option for Compass
+echo ""
+read -p 'Do you want to port-forward MongoDB to localhost:27017 for Compass? (y/n): ' mongo_answer
+if [[ $mongo_answer == [Yy]* ]]; then
+  echo "🗄️ Port-forwarding MongoDB service/mongo-service 27017:27017 (running in background)"
+  echo "📊 Connect to MongoDB Compass with:"
+  echo "   Connection String: mongodb://root:password@localhost:27017/express_app?authSource=admin"
+  echo "   Or use: mongodb://localhost:27017 (then authenticate in Compass)"
+  # Forward MongoDB service to localhost for Compass connection
+  kubectl port-forward -n $NAMESPACE service/mongo-service 27017:27017 &
+  echo "✅ MongoDB accessible at: localhost:27017"
+else
+  echo "You can port-forward MongoDB later with:"
+  echo "kubectl port-forward -n $NAMESPACE service/mongo-service 27017:27017"
+  echo "📊 MongoDB Compass connection string:"
+  echo "   mongodb://root:password@localhost:27017/express_app?authSource=admin"
 fi 
