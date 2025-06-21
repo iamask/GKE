@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: express-app-config
+  namespace: gke-learning
+data:
+  NODE_ENV: "production"
+  APP_NAME: "GKE Express Hello World"

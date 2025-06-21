@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: gke-learning
+  labels:
+    name: gke-learning
+    purpose: learning-kubernetes

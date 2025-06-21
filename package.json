@@ -1,0 +1,20 @@
+{
+  "name": "gke-express-hello-world",
+  "version": "1.0.0",
+  "description": "Express.js Hello World app for GKE Kubernetes learning",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js",
+    "dev": "nodemon app.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": ["kubernetes", "gke", "express", "docker"],
+  "author": "Kubernetes Learner",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  }
+} 
