@@ -178,28 +178,26 @@ For the easiest deployment experience, use the automated script:
 This script automatically:
 
 - ✅ Ensures Minikube is running with required addons (ingress + metrics-server)
+- ✅ Applies all Kubernetes manifests (namespace, MongoDB, services, etc.)
 - ✅ Builds and deploys your application
-- ✅ Waits for all components to be ready
+- ✅ Waits for all components to be ready (MongoDB, metrics server, Express.js)
 - ✅ Generates initial load to create metrics
 - ✅ Shows current resource usage
 - ✅ Offers interactive port-forwarding
+
+**Perfect for:** One-command deployment that works every time, even on fresh clusters!
 
 ---
 
 ## 📝 When to Run `kubectl apply -f k8s/`
 
-You should run `kubectl apply -f k8s/` in these situations:
+**The `./deploy-app.sh` script now handles this automatically!** You only need to run `kubectl apply -f k8s/` manually if:
 
-- **First-time setup:** When you deploy to a fresh Minikube cluster or after deleting the namespace.
-- **After editing YAML files:** If you make changes to any manifest in the `k8s/` directory (e.g., deployments, services, configmaps, secrets).
-- **If resources are missing:** If the namespace or any resource does not exist, the deployment script will fail unless you apply the manifests first.
+- **You want to update infrastructure only:** If you've edited YAML files and don't want to rebuild the app
+- **You're troubleshooting:** To reapply manifests without restarting the app
+- **You're in a CI/CD pipeline:** Where you want to separate infrastructure from app deployment
 
-**You do NOT need to run it every time you redeploy the app image** (for example, if you are just updating code and using `./deploy-app.sh`).
-
-**Best practice:**
-
-- Run `kubectl apply -f k8s/` after any changes to your Kubernetes YAML files, or when setting up a new cluster.
-- Use `./deploy-app.sh` for fast, repeatable app updates and restarts.
+**For normal development:** Just use `./deploy-app.sh` - it handles everything!
 
 ---
 

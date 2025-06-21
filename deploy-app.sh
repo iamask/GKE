@@ -37,6 +37,11 @@ echo "👉 Switching Docker to Minikube's Docker daemon..."
 # so Kubernetes can find and use the local image without pulling from external registries
 eval $(minikube docker-env)
 
+echo "📋 Applying Kubernetes manifests..."
+# Apply all Kubernetes resources (namespace, MongoDB, services, etc.)
+# This ensures everything is deployed before we build and restart the app
+kubectl apply -f k8s/
+
 echo "🐳 Building Docker image: $IMAGE"
 # Build the production-ready Docker image with the latest code changes
 docker build -t $IMAGE .
@@ -44,6 +49,10 @@ docker build -t $IMAGE .
 echo "📊 Ensuring metrics server is ready..."
 # Wait for metrics server to be ready before proceeding
 kubectl wait --for=condition=ready pod -l k8s-app=metrics-server -n kube-system --timeout=120s
+
+echo "🗄️ Ensuring MongoDB is ready..."
+# Wait for MongoDB to be ready before deploying the app
+kubectl wait --for=condition=ready pod -l app=mongo -n $NAMESPACE --timeout=300s
 
 echo "🔄 Restarting Express.js deployment in namespace $NAMESPACE"
 # Force a rolling restart to pick up the new Docker image
